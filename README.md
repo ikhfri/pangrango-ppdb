@@ -354,3 +354,204 @@ GET /api/ppdb/score/:registrationId
 * Reject document wajib note
 
 ---
+# 🧑‍💼 Admin Dashboard API
+
+Endpoint khusus untuk **dashboard admin PPDB**.
+Digunakan untuk monitoring, filtering, dan analisis data pendaftar.
+
+---
+
+## 🔐 Authorization
+
+Semua endpoint membutuhkan JWT token:
+
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+Role yang diizinkan:
+
+* SUPER_ADMIN
+* ADMIN_PPDB
+* STAFF
+
+---
+
+# 📊 Dashboard Summary
+
+## Endpoint
+
+```http
+GET /api/admin/summary
+```
+
+## Response
+
+```json
+{
+  "registration": {
+    "total": 120,
+    "verified": 80,
+    "pending": 30,
+    "rejected": 10
+  },
+  "payment": {
+    "total": 120,
+    "paid": 85
+  }
+}
+```
+
+---
+
+# 👥 Registration Management
+
+## 🟢 Get All Registrations
+
+```http
+GET /api/admin/registration
+```
+
+## Query Params (optional)
+
+```http
+?status=PENDING
+?campaignId=uuid
+?search=ikhsan
+```
+
+## Response
+
+```json
+[
+  {
+    "id": "reg-1",
+    "namaLengkap": "Ikhsan Fahri",
+    "level": "SMP",
+    "status": "PENDING",
+    "campaign": {
+      "name": "Gelombang 1"
+    }
+  }
+]
+```
+
+---
+
+## 🔍 Get Registration Detail
+
+```http
+GET /api/admin/registration/:id
+```
+
+## Response
+
+```json
+{
+  "id": "reg-1",
+  "namaLengkap": "Ikhsan Fahri",
+  "status": "PENDING",
+  "campaign": {
+    "name": "Gelombang 1"
+  },
+  "documents": [
+    {
+      "status": "APPROVED",
+      "documentType": {
+        "name": "Ijazah"
+      }
+    }
+  ],
+  "payments": [
+    {
+      "status": "PAID",
+      "amount": 250000
+    }
+  ],
+  "scores": [
+    {
+      "semester": 7,
+      "value": 90,
+      "subject": {
+        "name": "Matematika"
+      }
+    }
+  ]
+}
+```
+
+---
+
+# 📁 Document Monitoring
+
+## 📊 Get Document Stats
+
+```http
+GET /api/admin/document/stats
+```
+
+## Response
+
+```json
+{
+  "pending": 20,
+  "approved": 70,
+  "rejected": 10
+}
+```
+
+---
+
+# 💳 Payment Monitoring
+
+## 📊 Get Payment Stats
+
+```http
+GET /api/admin/payment/stats
+```
+
+## Response
+
+```json
+{
+  "pending": 10,
+  "paid": 85,
+  "failed": 5,
+  "expired": 20
+}
+```
+
+---
+
+# 🔎 Filtering Example
+
+```http
+GET /api/admin/registration?status=VERIFIED&search=ikhsan
+```
+
+---
+
+# ⚠️ Business Rules
+
+* Data hanya bisa diakses oleh role admin
+* Status registration:
+
+  * PENDING
+  * VERIFIED
+  * REJECTED
+* Payment status hanya valid dari webhook
+* Document reject wajib memiliki note
+
+---
+
+# 🧠 Use Case Dashboard
+
+Admin dashboard dapat menampilkan:
+
+* 📊 Statistik total pendaftar
+* 📈 Grafik pembayaran
+* 📁 Status dokumen
+* 👥 List siswa (filter + search)
+* 📚 Nilai siswa
+
+---
