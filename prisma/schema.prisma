@@ -1,0 +1,189 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN_PPDB
+  STAFF
+  STUDENT
+}
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+enum Level {
+  SD
+  SMP
+  SMA
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+}
+
+enum RegistrationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model User {
+  id                  String   @id @default(uuid())
+  username            String   @unique
+  password            String
+  role                Role
+  mustChangePassword  Boolean  @default(true)
+  createdAt           DateTime @default(now())
+
+  registration        Registration?
+  student             Student?
+}
+
+model Campaign {
+  id        String   @id @default(uuid())
+  name      String
+  price     Int
+  quota     Int?
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  registrations Registration[]
+}
+
+model Registration {
+  id            String   @id @default(uuid())
+  nisn          String   @unique
+  namaLengkap   String
+  jenisKelamin  String?
+  tempatLahir   String?
+  tanggalLahir  DateTime?
+  noHp          String
+  level         Level
+  status        RegistrationStatus @default(PENDING)
+
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+
+  campaignId    String
+  campaign      Campaign @relation(fields: [campaignId], references: [id])
+
+  address       Address?
+  parent        Parent?
+  documents     Document[]
+  payments      Payment[]
+  scores        Score[]
+
+  createdAt     DateTime @default(now())
+}
+
+model Address {
+  id             String @id @default(uuid())
+  alamat         String
+  desa           String
+  kecamatan      String
+  kabupaten      String
+  provinsi       String
+  kodePos        String
+
+  registrationId String @unique
+  registration   Registration @relation(fields: [registrationId], references: [id])
+}
+
+model Parent {
+  id             String @id @default(uuid())
+  namaAyah       String
+  pekerjaanAyah  String
+  namaIbu        String
+  pekerjaanIbu   String
+  noHpOrtu       String
+
+  registrationId String @unique
+  registration   Registration @relation(fields: [registrationId], references: [id])
+}
+
+model DocumentType {
+  id        String  @id @default(uuid())
+  name      String
+  isRequired Boolean @default(false)
+
+  documents Document[]
+}
+model Document {
+  id             String @id @default(uuid())
+  fileUrl        String
+
+  status         DocumentStatus @default(PENDING)
+  note           String?
+
+  documentTypeId String
+  documentType   DocumentType @relation(fields: [documentTypeId], references: [id])
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  createdAt      DateTime @default(now())
+}
+
+model Payment {
+  id             String   @id @default(uuid())
+  amount         Int
+  status         PaymentStatus @default(PENDING)
+  externalId     String?  @unique
+  paymentMethod  String?
+  paidAt         DateTime?
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  createdAt      DateTime @default(now())
+}
+
+model Subject {
+  id        String   @id @default(uuid())
+  name      String
+  isActive  Boolean  @default(true)
+
+  scores    Score[]
+  createdAt DateTime @default(now())
+}
+
+model Score {
+  id             String @id @default(uuid())
+  semester       Int
+  value          Float
+
+  subjectId      String
+  subject        Subject @relation(fields: [subjectId], references: [id])
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  @@unique([registrationId, subjectId, semester])
+}
+
+//////////////////////////////////////////////////////
+// 🏫 FUTURE: SCHOOL SYSTEM
+//////////////////////////////////////////////////////
+
+model Student {
+  id            String   @id @default(uuid())
+  namaLengkap   String
+  nis          String   @unique
+
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+
+  createdAt     DateTime @default(now())
+}
