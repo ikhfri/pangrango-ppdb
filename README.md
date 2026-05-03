@@ -375,6 +375,169 @@ Role yang diizinkan:
 * ADMIN_PPDB
 * STAFF
 
+
+# 🎯 Selection API (Global Ranking & Admission)
+
+Fitur seleksi digunakan untuk menentukan **kelulusan siswa berdasarkan nilai raport**.
+
+⚠️ **Penting:**
+Seleksi dilakukan **GLOBAL (tidak per campaign)**.
+Semua peserta dari berbagai campaign akan digabung dan diranking bersama.
+
+---
+
+# 🧠 Konsep Seleksi
+
+```text
+Semua peserta VERIFIED
+        ↓
+Hitung rata-rata nilai
+        ↓
+Ranking global (descending)
+        ↓
+Ambil sesuai quota sekolah
+        ↓
+PASSED / FAILED
+```
+
+---
+
+# ⚙️ Konfigurasi
+
+Quota kelulusan diambil dari table `Setting`:
+
+```json
+{
+  "key": "SELECTION_QUOTA",
+  "value": "100"
+}
+```
+
+---
+
+# 🚀 Run Selection
+
+## Endpoint
+
+```http
+POST /api/ppdb/selection/run
+```
+
+## Authorization
+
+```http
+Authorization: Bearer TOKEN
+```
+
+Role:
+
+* ADMIN_PPDB
+* SUPER_ADMIN
+
+---
+
+## Response
+
+```json
+{
+  "message": "Global selection completed",
+  "total": 120
+}
+```
+
+---
+
+# 📊 Get Ranking (Global)
+
+## Endpoint
+
+```http
+GET /api/ppdb/selection/ranking
+```
+
+---
+
+## Response
+
+```json
+[
+  {
+    "id": "reg-1",
+    "namaLengkap": "Ikhsan Fahri",
+    "selectionScore": 89.5,
+    "selectionStatus": "PASSED"
+  },
+  {
+    "id": "reg-2",
+    "namaLengkap": "Budi",
+    "selectionScore": 70,
+    "selectionStatus": "FAILED"
+  }
+]
+```
+
+---
+
+# 📌 Status Kelulusan
+
+| Status  | Keterangan          |
+| ------- | ------------------- |
+| PENDING | Belum diseleksi     |
+| PASSED  | Lulus seleksi       |
+| FAILED  | Tidak lulus seleksi |
+
+---
+
+# ⚠️ Business Rules
+
+* Hanya peserta dengan status **VERIFIED** yang ikut seleksi
+* Nilai dihitung dari rata-rata semua score
+* Campaign **tidak mempengaruhi hasil seleksi**
+* Kuota bersifat global (bukan per gelombang)
+* Jika tidak ada quota → semua peserta dianggap lolos
+
+---
+
+# 🔍 Contoh Perhitungan
+
+```json
+[
+  {
+    "namaLengkap": "A",
+    "scores": [80, 90, 100]
+  },
+  {
+    "namaLengkap": "B",
+    "scores": [70, 75, 80]
+  }
+]
+```
+
+### Hasil:
+
+```text
+A → 90 (PASSED)
+B → 75 (FAILED)
+```
+
+---
+
+# 🧠 Future Improvement
+
+* Bobot per subject (weighted score)
+* Minimal nilai per mapel
+* Multi jalur seleksi (zonasi, prestasi)
+* Batch selection (multi tahap)
+
+---
+
+# ✅ Summary
+
+✔ Seleksi global (multi campaign)
+✔ Ranking otomatis
+✔ Fair & scalable
+✔ Siap untuk sistem PPDB real-world
+
 ---
 
 # 📊 Dashboard Summary

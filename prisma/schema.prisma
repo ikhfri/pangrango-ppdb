@@ -18,6 +18,13 @@ enum DocumentStatus {
   APPROVED
   REJECTED
 }
+
+enum SelectionStatus {
+  PENDING
+  PASSED
+  FAILED
+}
+
 enum Level {
   SD
   SMP
@@ -78,6 +85,9 @@ model Registration {
 
   campaignId    String
   campaign      Campaign @relation(fields: [campaignId], references: [id])
+
+  selectionScore  Float?
+  selectionStatus SelectionStatus @default(PENDING)
 
   address       Address?
   parent        Parent?
@@ -171,6 +181,12 @@ model Score {
   registration   Registration @relation(fields: [registrationId], references: [id])
 
   @@unique([registrationId, subjectId, semester])
+}
+
+model Setting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
 }
 
 //////////////////////////////////////////////////////
