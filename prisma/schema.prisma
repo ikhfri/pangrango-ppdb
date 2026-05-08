@@ -78,6 +78,7 @@ model Registration {
   tanggalLahir  DateTime?
   noHp          String
   level         Level
+  asalSekolah   String?
   status        RegistrationStatus @default(PENDING)
 
   userId        String   @unique
